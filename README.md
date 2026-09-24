@@ -1,2 +1,2 @@
 # RapidDrop-for-Youtube-mp3-mp4
-Have your own video dowloader on your computer. No ads, no limits, no subscription
+A clean, ad-free, and high-speed YouTube downloader for your PC. No limits, no malware.
