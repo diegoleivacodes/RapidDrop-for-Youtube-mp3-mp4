@@ -23,5 +23,4 @@ Este software fue diseñado e implementado por mí utilizando Inteligencia Artif
 # Cómo compilar tu propio ejecutable 
 Si realizas cambios en el código y deseas volver a generar el archivo .exe independiente para Windows, asegúrate de tener instaladas las dependencias y ejecuta el siguiente comando en tu terminal (CMD/Bash) dentro de la carpeta donde se encuentre el archivo.py
 
-´´´python -m PyInstaller --noconfirm --onefile --windowed --collect-all customtkinter YtDwld0.1.py
-´´´
+´´´ python -m PyInstaller --noconfirm --onefile --windowed --collect-all customtkinter YtDwld0.1.py ´´´
