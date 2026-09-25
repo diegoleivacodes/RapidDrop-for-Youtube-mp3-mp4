@@ -3,8 +3,8 @@ A clean, ad-free, and high-speed YouTube downloader for your PC. No limits, no m
 
 Una aplicación de escritorio moderna, rápida y ligera construida en Python para descargar audios (MP3) y videos (MP4) individuales de YouTube de forma directa, sin anuncios ni restricciones de velocidad.El proyecto cuenta con un diseño de interfaz gráfica limpio, asíncrono y optimizado, empaquetado en un archivo ejecutable .exe autónomo ideal para usuarios finales.
 
-# Características principalesDescargas sin límites: 
-Extrae contenido a máxima velocidad aprovechando todo tu ancho de banda de internet de forma privada.
+# Características principales
+Descargas sin límites: Extrae contenido a máxima velocidad aprovechando todo tu ancho de banda de internet de forma privada.
 Detección inteligente de enlaces: Ignora metadatos pesados de listas de reproducción cuando solo deseas un video individual.
 Selector visual de carpetas: Permite configurar dinámicamente el directorio de guardado mediante el explorador nativo del sistema.
 Buscador de miniaturas: Descarga y muestra la portada (thumbnail) del video en tiempo real antes de iniciar la descarga.
@@ -23,4 +23,5 @@ Este software fue diseñado e implementado por mí utilizando Inteligencia Artif
 # Cómo compilar tu propio ejecutable 
 Si realizas cambios en el código y deseas volver a generar el archivo .exe independiente para Windows, asegúrate de tener instaladas las dependencias y ejecuta el siguiente comando en tu terminal (CMD/Bash) dentro de la carpeta donde se encuentre el archivo.py
 
-python -m PyInstaller --noconfirm --onefile --windowed --collect-all customtkinter --add-binary "ffmpeg.exe;." --add-binary "ffprobe.exe;." RapidDrop0.1.py
+python -m PyInstaller --noconfirm --onefile --windowed --collect-all customtkinter RapidDrop0.1.py
+
