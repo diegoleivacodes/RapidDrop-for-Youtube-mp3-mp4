@@ -236,8 +236,7 @@ class DownloaderApp(ctk.CTk):
             'progress_hooks': [lambda d: self.actualizar_progreso_descarga(d)],
         }
 
-
-        
+        # --- BLOQUE DE FORMATOS CORREGIDO Y BLINDADO (MÁXIMO 1080p) ---
         if formato == "MP3":
             ydl_opts.update({
                 'format': 'bestaudio/best',
@@ -248,10 +247,21 @@ class DownloaderApp(ctk.CTk):
                 }],
             })
         else:
-            calidad_video = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best' if "Alta" in calidad_seleccionada else 'worstvideo[ext=mp4]+worstaudio[ext=m4a]/worst[ext=mp4]/worst'
+            # Si el usuario elige "Alta", limitamos a un techo máximo de 1080p de altura
+            if "Alta" in calidad_seleccionada:
+                regra_calidad = 'bestvideo[height<=1080]+bestaudio/best[height<=1080]/best'
+            else:
+                # Si elige "Media", lo limitamos a un techo máximo de 720p para ahorrar aún más red
+                regra_calidad = 'bestvideo[height<=720]+bestaudio/best[height<=720]/best'
+                
             ydl_opts.update({
-                'format': calidad_video,
+                'format': regra_calidad,
+                'merge_output_format': 'mp4',  # fusiona todo estrictamente en MP4
             })
+
+
+        
+        
             
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
