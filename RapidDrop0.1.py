@@ -104,27 +104,47 @@ class DownloaderApp(ctk.CTk):
 
     # Auto Actualizar la libreria de forma segura en un archivo .exe
         # Auto Actualizar la libreria usando el motor nativo de yt-dlp
+        # Motor asíncrono para mantener el sistema al día e instalar dependencias faltantes
     def verificar_actualizaciones(self):
-        def tarea_actualizar():
+        def tarea_automatica():
+            import shutil
+            
+            # 1. VERIFICACIÓN E INSTALACIÓN AUTOMÁTICA DE FFMPEG
+            if not shutil.which("ffmpeg"):
+                self.lbl_estado.configure(text="⚙️ Instalando FFmpeg automáticamente en tu PC (puede tardar 1-2 min)...", text_color="orange")
+                try:
+                    # Llama al instalador nativo de Windows (winget) de forma silenciosa e invisible
+                    subprocess.check_call(
+                        ["winget", "install", "Gyan.FFmpeg", "--silent", "--accept-source-agreements", "--accept-package-agreements"],
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                    )
+                    # ¡AVISO INTERMEDIO EXCELENTE!
+                    self.lbl_estado.configure(text="📦 ¡FFmpeg instalado con éxito en el sistema!", text_color="green")
+                    # Una micro pausa de 2 segundos para que el usuario alcance a leer el éxito de la instalación
+                    import time
+                    time.sleep(2)
+                except Exception:
+                    # Si winget falla (por ejemplo, en un Windows muy antiguo sin winget)
+                    self.lbl_estado.configure(text="⚠️ Falló la autoinstalación de FFmpeg. Se requerirá instalación manual.", text_color="red")
+                    return
+
+            # 2. ACTUALIZACIÓN NATIVA DE YT-DLP
             self.lbl_estado.configure(text="🔄 Buscando actualizaciones de yt-dlp...", text_color="orange")
             try:
-                # Opciones para indicarle a yt-dlp que solo queremos ejecutar su actualizador interno
                 ydl_opts_update = {
                     'update_self': True,
-                    'logger': None,  # Mantiene el proceso en silencio para que no ensucie la consola
+                    'logger': None,
                 }
-                # Llamamos al motor de yt-dlp para que se actualice a sí mismo de manera segura
                 with yt_dlp.YoutubeDL(ydl_opts_update) as ydl:
-                    # En versiones modernas de yt-dlp esto descarga e instala el parche de inmediato
                     pass 
                 
-                self.lbl_estado.configure(text="✅ Sistema listo y verificado de forma nativa.", text_color="green")
+                self.lbl_estado.configure(text="✅ Sistema listo, verificado y con FFmpeg activo.", text_color="green")
             except Exception:
-                # Si de verdad no hay internet o el servidor de github/yt-dlp está caído
                 self.lbl_estado.configure(text="⚠️ Listo. No se requirieron actualizaciones externas.", text_color="gray")
 
-        # Lo lanzamos en un hilo separado para que la ventana cargue al instante
-        threading.Thread(target=tarea_actualizar, daemon=True).start()
+        # Lo ejecutamos en segundo plano para no congelar la ventana al iniciar
+        threading.Thread(target=tarea_automatica, daemon=True).start()
+
 
 
 
@@ -213,6 +233,15 @@ class DownloaderApp(ctk.CTk):
             
         if not carpeta or not os.path.exists(carpeta):
             self.lbl_estado.configure(text="❌ La carpeta elegida no existe o no es válida.", text_color="red")
+            return
+
+        # --- VALIDACIÓN DE FFMPEG PARA EVITAR BUGS EN CUALQUIER PC ---
+        import shutil
+        if not shutil.which("ffmpeg"):
+            self.lbl_estado.configure(
+                text="❌ Se requiere FFmpeg en el sistema para convertir audio/video. Por favor, instálalo.", 
+                text_color="red"
+            )
             return
             
         formato = self.formato_var.get()
