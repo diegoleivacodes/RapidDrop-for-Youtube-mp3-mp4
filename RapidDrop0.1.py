@@ -110,21 +110,28 @@ class DownloaderApp(ctk.CTk):
             import shutil
             
             # 1. VERIFICACIÓN E INSTALACIÓN AUTOMÁTICA DE FFMPEG
+            # Agregamos la ruta por defecto de winget al PATH de Python por si acaso
+            ruta_defecto_winget = r"C:\Program Files\FFmpeg\bin"
+            if ruta_defecto_winget not in os.environ["PATH"]:
+                os.environ["PATH"] += os.pathsep + ruta_defecto_winget
+
             if not shutil.which("ffmpeg"):
                 self.lbl_estado.configure(text="⚙️ Instalando FFmpeg automáticamente en tu PC (puede tardar 1-2 min)...", text_color="orange")
                 try:
-                    # Llama al instalador nativo de Windows (winget) de forma silenciosa e invisible
+                    # Llama al instalador nativo de Windows (winget)
                     subprocess.check_call(
                         ["winget", "install", "Gyan.FFmpeg", "--silent", "--accept-source-agreements", "--accept-package-agreements"],
                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
                     )
-                    # ¡AVISO INTERMEDIO EXCELENTE!
+                    
+                    # Forzamos la actualización del PATH interno tras la instalación exitosa
+                    if ruta_defecto_winget not in os.environ["PATH"]:
+                        os.environ["PATH"] += os.pathsep + ruta_defecto_winget
+                        
                     self.lbl_estado.configure(text="📦 ¡FFmpeg instalado con éxito en el sistema!", text_color="green")
-                    # Una micro pausa de 2 segundos para que el usuario alcance a leer el éxito de la instalación
                     import time
                     time.sleep(2)
                 except Exception:
-                    # Si winget falla (por ejemplo, en un Windows muy antiguo sin winget)
                     self.lbl_estado.configure(text="⚠️ Falló la autoinstalación de FFmpeg. Se requerirá instalación manual.", text_color="red")
                     return
 
@@ -183,7 +190,7 @@ class DownloaderApp(ctk.CTk):
             'noplaylist': True,  # <--- FUERZA A IGNORAR LA PLAYLIST
         }
         
-        try:
+        try: 
             with yt_dlp.YoutubeDL(ydl_opts_info) as ydl:
                 # Extraemos la información del enlace
                 info = ydl.extract_info(url, download=False)
@@ -227,6 +234,7 @@ class DownloaderApp(ctk.CTk):
         url = self.txt_link.get().strip()
         carpeta = self.ruta_descarga.get()
         
+        
         if not url:
             self.lbl_estado.configure(text="❌ Por favor, ingresa un enlace válido.", text_color="red")
             return
@@ -235,14 +243,19 @@ class DownloaderApp(ctk.CTk):
             self.lbl_estado.configure(text="❌ La carpeta elegida no existe o no es válida.", text_color="red")
             return
 
-        # --- VALIDACIÓN DE FFMPEG PARA EVITAR BUGS EN CUALQUIER PC ---
+        # --- VALIDACIÓN DINÁMICA DE FFMPEG ---
         import shutil
+        ruta_defecto_winget = r"C:\Program Files\FFmpeg\bin"
+        if ruta_defecto_winget not in os.environ["PATH"]:
+            os.environ["PATH"] += os.pathsep + ruta_defecto_winget
+
         if not shutil.which("ffmpeg"):
             self.lbl_estado.configure(
-                text="❌ Se requiere FFmpeg en el sistema para convertir audio/video. Por favor, instálalo.", 
+                text="❌ FFmpeg no detectado. Espera a que termine la autoinstalación o instálalo manualmente.", 
                 text_color="red"
             )
             return
+
             
         formato = self.formato_var.get()
         calidad_seleccionada = self.cb_calidad.get()
@@ -302,6 +315,7 @@ class DownloaderApp(ctk.CTk):
             self.btn_download.configure(state="normal")
 
     def actualizar_progreso_descarga(self, d):
+        # Si yt-dlp está en la fase de descarga pura de archivos
         if d['status'] == 'downloading':
             total = d.get('total_bytes') or d.get('total_bytes_estimate')
             descargado = d.get('downloaded_bytes', 0)
@@ -311,11 +325,14 @@ class DownloaderApp(ctk.CTk):
                 self.barra_progreso.set(porcentaje)
                 
                 porcentaje_texto = int(porcentaje * 100)
-                self.lbl_estado.configure(text=f"⏳ Descargando... {porcentaje_texto}%", text_color="orange")
+                # Mostramos qué archivo está bajando (video o audio) de manera limpia
+                self.lbl_estado.configure(text=f"⏳ Descargando elementos... {porcentaje_texto}%", text_color="orange")
                 
+        # Cambiamos a este estado solo cuando el hook confirme la fase de postprocesamiento final
         elif d['status'] == 'finished':
             self.barra_progreso.set(1.0)
-            self.lbl_estado.configure(text="🔄 Procesando/Convirtiendo archivos... Espere un momento.", text_color="orange")
+            self.lbl_estado.configure(text="🔄 Fusión y conversión final en progreso... Espere un momento.", text_color="orange")
+
 
 
 
