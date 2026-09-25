@@ -266,17 +266,23 @@ class DownloaderApp(ctk.CTk):
         self.lbl_estado.configure(text="⏳ Descargando... Revisa el progreso en pantalla.", text_color="orange")
         self.btn_download.configure(state="disabled")
         
-        # Modifica estas líneas dentro de tu función ejecutar_descarga:
-        plantilla_nombre = '%(title)s.%(ext)s' # Quitamos el playlist_index del nombre
+        
+        
+        # --- SOLUCIÓN AL BUG DE SOBRESCRITURA: NOMBRES DINÁMICOS ---
+        if formato == "MP3":
+            plantilla_nombre = '%(title)s Aud.%(ext)s'
+        else:
+            plantilla_nombre = '%(title)s Vid.%(ext)s'
+            
         ruta_completa_guardado = os.path.join(carpeta, plantilla_nombre)
         
         ydl_opts = {
             'outtmpl': ruta_completa_guardado,
             'noplaylist': True,
             'ignoreerrors': True,
-            # Usamos una función lambda como puente directo y seguro
             'progress_hooks': [lambda d: self.actualizar_progreso_descarga(d)],
         }
+
 
         # --- BLOQUE DE FORMATOS CORREGIDO Y BLINDADO (MÁXIMO 1080p) ---
         if formato == "MP3":
